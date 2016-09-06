@@ -59,17 +59,17 @@ For example, if got a body shot ('B') on location (4,5), then after this shot th
 
 Furthermore from this hint visualization, we could see that intersected squares are the most efficient shots. Specially the square (3,4), (5,4), (3,6) and (5,6) are the most efficient locations. By shooting at one of these locations the agent will be rewarded anyway:
 
-* Could win the game by just hitting a head, because these four locations are head locations.
+* Could win the game by just hitting a head, because these four locations are possible head locations.
 
-* Could be a body shot, for example at (3,4). If so the next possible head locations will be less at least 3 times.
+* Could be a body shot, for example at (3,4). If so the next possible head locations will be less 3 times at least.
 
   ![shot BB](shot_BB.png)
 
-* Could be miss. Even in this case the next possible head locations will be reduced a little.
+* Could be a miss. Even in this case the next possible head locations will be reduced a little.
 
 ** Sample 2: Hint after missed shot **
 
-If the agent shot at (2,2) and missed, then it still has to learn something from this shot, because this shot will reduce the next possible heads.
+If the agent missed at (2,2), then it still has to learn something from this shot, because this shot will reduce the next possible heads. In the below figure, white squares are non-head coordinates after this missed shot, so the agent will ignore this locations for the next shot.
 
 ![shot M](shot_M.png)
 
@@ -79,6 +79,7 @@ This problem could be solved by using the Reinforcement Learning approach.
 
 The idea is to reward every efficient shot of the agent. How efficient is measured by reduction of possible head locations after every shot. Also could be some punishment, for example we could punish the agent if it shot at same location repeatedly.
 
+
 With this idea and enough number of training, I think the agent could 'learn' how to shoot efficiently.
 
 Here is parameters for RL:
@@ -87,8 +88,14 @@ Here is parameters for RL:
 
 * *Actions*: There are 100 actions for every square coordinates. Again we will use hints. So it will reduce the 'state-action' combinations a lot.
 
-* *Reward*:
+* *Reward*:  General reward formula is:
+  ```
+  reward = len(hint_old) - len(hint_new)
+  ```
 
+  For example, in case of the `Sample 1` of the section 'Data Exploration', by shooting at `(3,4)`, the agent will be rewarded by score 22, because before the shot a hint was 32, after the shot it become 10, so 32 - 10 = 22. So the shot was efficient that much in that particular state.
+
+#TODO: параметр тохируулгын тухай бичих
 
 Alpha утгыг 1.0 сонгоно.
 
@@ -175,16 +182,18 @@ A plane that East headed on location (8, 7):
 
 
 TODO: Захын цэгүүдээр магадлал муутай, гол руугаа өндөр болж харагдах ёстой.
-Мөн аль нэг байрлал дээр шарх олсон бол өнгөний уусалтаар маш тодорхой харагдах ёстой.
+Мөн аль нэг байрлал дээр шарх олсон бол өнгөний уусалтаар тодорхой харагдах ёстой.
 
 
 ### Reflection
 
 This is a simple guessing game. But the most important question was could the agent learn well enough to compete against a experienced human player.
 
-RL шийдлээр шийдэхэд state болон action тоо маш их байсан учраас сургах хугацаа маш их шаардлагатай байсан нь гол асуудал байсан. Үүнийг шийдэх нэг хувилбар нь hint ашиглах юм. Эцсийн зорилго бол жинхэнэ хүн тоглогчтой өрсөлдөх хэмжээний agent бий болгох учраас hint ашиглах нь болохгүй зүйлгүй.
+RL шийдлээр шийдэхэд state болон action тоо маш их байсан учраас сургахад  маш их хугацаа шаардлагатай сул талтай байсан. Үүнийг шийдэх нэг хувилбар нь hint ашиглах юм. Эцсийн зорилго бол жинхэнэ хүн тоглогчтой өрсөлдөх хэмжээний agent бий болгох учраас hint ашиглах нь болохгүй зүйлгүй.
 
 Эцэст нь agent боломжийн хэмжээнд сурсан гэж үзэж байна. Дунджаар 8-12 буудалтаар онгоцны толгойн байрлалыг олж чадаж байгаа.
 
 
 ### Improvement
+
+Цаашид сайжруулах олон санаа байна.
