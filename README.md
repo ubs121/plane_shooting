@@ -109,7 +109,9 @@ Gamma утгыг 2.0 гэж сонгож болно. Хамгийн цөөн х�
 
 ### Benchmark
 
-#TODO: In this section, you will need to provide a clearly defined benchmark result or threshold for comparing across performances obtained by your solution. The reasoning behind the benchmark (in the case where it is not an established result) should be discussed. Questions to ask yourself when writing this section:
+TODO:
+
+In this section, you will need to provide a clearly defined benchmark result or threshold for comparing across performances obtained by your solution. The reasoning behind the benchmark (in the case where it is not an established result) should be discussed. Questions to ask yourself when writing this section:
 - _Has some result or value been provided that acts as a benchmark for measuring performance?_
 - _Is it clear how this result or value was obtained (whether by data or by hypothesis)?_
 
@@ -142,7 +144,7 @@ The solution code consists 3 code sections: environment, agent and simulation.
 
 ### Model Evaluation and Validation
 
-#TODO:
+TODO:
 
 In this section, the final model and any supporting qualities should be evaluated in detail. It should be clear how the final model was derived and why this model was chosen. In addition, some type of analysis should be used to validate the robustness of this model and its solution, such as manipulating the input data or environment to see how the model’s solution is affected (this is called sensitivity analysis). Questions to ask yourself when writing this section:
 
@@ -156,7 +158,7 @@ In this section, the final model and any supporting qualities should be evaluate
 
 ### Justification
 
-#TODO:
+TODO:
 
 In this section, your model’s final solution and its results should be compared to the benchmark you established earlier in the project using some type of statistical analysis. You should also justify whether these results and the solution are significant enough to have solved the problem posed in the project. Questions to ask yourself when writing this section:
 - _Are the final results found stronger than the benchmark result reported earlier?_
