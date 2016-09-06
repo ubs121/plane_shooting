@@ -9,83 +9,95 @@ August 29th, 2016
 
 ### Project Overview
 
-Дунд сургуульд байх үед онгоц буудах тоглоомыг их тоглодог байж билээ. Энэ тоглоом нь may be Mongolian variant of classic Battleship game.
+This is a pencil and paper game similar to the [Battleship game](https://en.wikipedia.org/wiki/Battleship_game). We used to play this game during school days.
 
 The game is played by 2 players on four grids, two for each player. The grids are 10×10 square – and the individual squares in the grid are identified by row and column number. On one grid the player arranges ships and records the shots by the opponent. On the other grid the player records their own shots.
 
-Before play begins, each player secretly arranges their ships on their primary grid. Each plane occupies a number of consecutive squares on the grid, arranged either horizontally or vertically. The number of squares for each plane is determined by the type of the ship.
+Before play begins, each player secretly arranges their planes on their primary grid, usually 2-3 planes. Each plane occupies a number of consecutive squares on the grid, arranged either horizontally or vertically.
+
+One player tells the coordinates for shot, and the other give a feedback whether the player has hit or missed the plane. The best shooter who shot all planes of the opponent will win the game.
 
 
 ### Problem Statement
 
-Human player 10x10 хэмжээтэй grid space дээр дараах дүрс бүхий нэг онгоц байрлуулна.
+Human player secretly arranges a plane with the following figure on a grid with size of 10x10, let's say it an environment. You have to develop an agent that is capable to learn how to shoot the plane in this environment.
 
 ![](plane1.png)
 
-Компютер agent үүнийг хамгийн цөөн буудалтаар сөнөөх ёстой. Ө.х толгойн байрлалыг тааж олох ёстой.
+The human player gives a feedback with letter `H` for head shot, `B` for body shot and `M` for miss (see the figure above).
 
-Agent-н зорилт бол онгоцыг хамгийн цөөн буудалтаар сөнөөх ёстой, үүний тулд боломжит хувилбаруудаас хамгийн оновчтойг сонгож сурах ёстой.
-
-Game Rule: The agent tells you the coordinates for shot, and you tell back whether the agent has hit or missed the plane. Таах үйлдлийг чиглүүлэхийн тулд тоглогч H, B гэсэн feedback өгнө.
-
-Нийт 168 боломжит layout байна. Онгоцны толгойн байрлалын боломжит хувилбаруудыг буудалт бүрийн дараа input болгон өгнө.
+Using this feedback the agent have to find the head of the plane with minimum possible shots.
 
 ### Metrics
 
-Агент нь хамгийн цөөн үйлдлээр онгоцны толгойн байрлалыг тааж олох ёстой.
+The agent's goal is to find the head of the plane with minimum possible shots.
 
-Гүйцэтгэлийг бодит хүнтэй харьцуулах замаар шалгаж болно.
+It's possible to find the plane (some part of the plane) with 10 shots at maximum, if the agent has some intelligence. Because the plane occupies 1/10 space on the board.
 
-Үүнд бүх боломжит хувилбарууд дээр дадлага хийх замаар суралцах ёстой.
+In worst case the agent could find the head with 100 shots, which means it has to hit every square on the grid.
 
-
-
-In this section, you will need to clearly define the metrics or calculations you will use to measure performance of a model or result in your project. These calculations and metrics should be justified based on the characteristics of the problem and problem domain. Questions to ask yourself when writing this section:
-- _Are the metrics you’ve chosen to measure the performance of your models clearly discussed and defined?_
-- _Have you provided reasonable justification for the metrics chosen based on the problem and solution?_
+Once hit on the body of the plane it should be easy to guess the head, usually 2-4 shots needed after body shot. So in total, 14 shots should be enough to find the head. Some lucky human players find the head with 5-6 shots usually. The agent must learn this technique, and be able to compete with a human player.
 
 
 ## II. Analysis
-_(approx. 2-4 pages)_
 
 ### Data Exploration
 
-Дээшээ харсан байрлал нийт онгоц
+There is no existing dataset for this problem.
 
-Онгоцны бүх боломжит байршлууд мэдэгдэж байгаа. Нийт 168 боломжит байршил бий.
+The simplest agent could find the head with 100 shots, just by hitting each square of the grid.
 
-Нэг тоглолтын хувьд хамгийн муу тохиолдолд 100 удаа буудаж байж онгоцыг устгана. Үүнээс тооцвол хамгийн муудаа 168 үйлдлээр бүх хувилбарыг суралцах боломжтой юм.
+In order to minimize shots, a hint of next possible head locations is given to the agent. The agent must learn from this hint, and learn to select the best guess for head shot.
 
-Ямар нэг (x, y) байрлал дээр шарх авсан тохиолдолд үлдэх боломж нь тодорхой болох ёстой.
+The agent could learn and play like experienced human by 'practicing' every possible layouts of the plane.
 
-Жишээ нь (2,2) байрлал дээр буудахад хоосон байсан бол -1 оноо авах бөгөөд дахиж энэ байрлалаас дотогш буудахгүй байх ёстой, учир нь энэ булангийн байрлал байна.
+** Sample 1: Hint after body shot **
 
+For example, if got a body shot ('B') on location (4,5), then after this shot the hint will look like the following. There are 32 possible head location after the body shot at (4,5).
 
-In this section, you will be expected to analyze the data you are using for the problem. This data can either be in the form of a dataset (or datasets), input data (or input files), or even an environment. The type of data should be thoroughly described and, if possible, have basic statistics and information presented (such as discussion of input features or defining characteristics about the input or environment). Any abnormalities or interesting qualities about the data that may need to be addressed have been identified (such as features that need to be transformed or the possibility of outliers). Questions to ask yourself when writing this section:
-- _If a dataset is present for this problem, have you thoroughly discussed certain features about the dataset? Has a data sample been provided to the reader?_
-- _If a dataset is present for this problem, are statistics about the dataset calculated and reported? Have any relevant results from this calculation been discussed?_
-- _If a dataset is **not** present for this problem, has discussion been made about the input space or input data for your problem?_
-- _Are there any abnormalities or characteristics about the input space or dataset that need to be addressed? (categorical variables, missing values, outliers, etc.)_
+![shot B](shot_B.png)
 
-### Exploratory Visualization
+Furthermore from this hint visualization, we could see that intersected squares are the most efficient shots. Specially the square (3,4), (5,4), (3,6) and (5,6) are the most efficient locations. By shooting at one of these locations the agent will be rewarded anyway:
 
-TODO: Захын цэгүүдээр магадлал муутай, гол руугаа өндөр болж харагдах ёстой.
-Мөн аль нэг байрлал дээр шарх олсон бол өнгөний уусалтаар маш тодорхой харагдах ёстой.
+* Could win the game by just hitting a head, because these four locations are head locations.
 
-In this section, you will need to provide some form of visualization that summarizes or extracts a relevant characteristic or feature about the data. The visualization should adequately support the data being used. Discuss why this visualization was chosen and how it is relevant. Questions to ask yourself when writing this section:
-- _Have you visualized a relevant characteristic or feature about the dataset or input data?_
-- _Is the visualization thoroughly analyzed and discussed?_
-- _If a plot is provided, are the axes, title, and datum clearly defined?_
+* Could be a body shot, for example at (3,4). If so the next possible head locations will be less at least 3 times.
+
+  ![shot BB](shot_BB.png)
+
+* Could be miss. Even in this case the next possible head locations will be reduced a little.
+
+** Sample 2: Hint after missed shot **
+
+If the agent shot at (2,2) and missed, then it still has to learn something from this shot, because this shot will reduce the next possible heads.
+
+![shot M](shot_M.png)
 
 ### Algorithms and Techniques
 
-Reinforcement Learning аргаар энэ асуудлыг шийдэж болно гэж үзэж байгаа.
+This problem could be solved by using the Reinforcement Learning approach.
 
-Хамгийн цөөн хувилбар үлдээж шахах замаар буудах аргад agent суралцах ёстой.
+The idea is to reward every efficient shot of the agent. How efficient is measured by reduction of possible head locations after every shot. Also could be some punishment, for example we could punish the agent if it shot at same location repeatedly.
 
-In this section, you will need to discuss the algorithms and techniques you intend to use for solving the problem. You should justify the use of each one based on the characteristics of the problem and the problem domain. Questions to ask yourself when writing this section:
+With this idea and enough number of training, I think the agent could 'learn' how to shoot efficiently.
+
+Here is parameters for RL:
+
+* *States*: If we count every square of the grid, there are 3^100 states for this game. 3 is for 'B', 'M' and empty square. This is a huge number and takes tremendous amount of time to train the agent. Luckily we will use hints. Anyway we will use the current shot marks on the grid as a state, because it represents the current state the best.
+
+* *Actions*: There are 100 actions for every square coordinates. Again we will use hints. So it will reduce the 'state-action' combinations a lot.
+
+* *Reward*:
+
+
+Alpha утгыг 1.0 сонгоно.
+
+Gamma утгыг 2.0 гэж сонгож болно. Хамгийн цөөн хувилбар үлдээхийг зорих хэрэгтэй. Reward нь мөн энэ зарчим дээр үндэслэсэн байгаа, тиймээс тухай тухайн шагнал хамгийн чухал байна.
+
 - _Are the algorithms you will use, including any default variables/parameters in the project clearly defined?_
+
 - _Are the techniques to be used thoroughly discussed and justified?_
+
 - _Is it made clear how the input data or datasets will be handled by the algorithms and techniques chosen?_
 
 ### Benchmark
@@ -96,21 +108,20 @@ In this section, you will need to provide a clearly defined benchmark result or 
 
 
 ## III. Methodology
-_(approx. 3-5 pages)_
 
 ### Data Preprocessing
 
-In this section, all of your preprocessing steps will need to be clearly documented, if any were necessary. From the previous section, any of the abnormalities or characteristics that you identified about the dataset will be addressed and corrected here. Questions to ask yourself when writing this section:
-- _If the algorithms chosen require preprocessing steps like feature selection or feature transformations, have they been properly documented?_
-- _Based on the **Data Exploration** section, if there were abnormalities or characteristics that needed to be addressed, have they been properly corrected?_
-- _If no preprocessing is needed, has it been made clear why?_
+Өгөгдөл урьдчилан боловсруулах шаардлага байхгүй.
+
+But after the problem is solved we could use the trained dataset for a real game (with real human). Дараа нь энэ training өгөгдөлөө файлд хадгалаад, цааш нь нэмж суралцаад байж болно.
 
 ### Implementation
 
-In this section, the process for which metrics, algorithms, and techniques that you implemented for the given data will need to be clearly documented. It should be abundantly clear how the implementation was carried out, and discussion should be made regarding any complications that occurred during this process. Questions to ask yourself when writing this section:
-- _Is it made clear how the algorithms and techniques were implemented with the given datasets or input data?_
-- _Were there any complications with the original metrics or techniques that required changing prior to acquiring a solution?_
-- _Was there any part of the coding process (e.g., writing complicated functions) that should be documented?_
+The solution code consists 3 code sections: environment, agent and simulation.
+
+
+
+
 
 ### Refinement
 
@@ -121,14 +132,17 @@ In this section, you will need to discuss the process of improvement you made up
 
 
 ## IV. Results
-_(approx. 2-3 pages)_
 
 ### Model Evaluation and Validation
 
 In this section, the final model and any supporting qualities should be evaluated in detail. It should be clear how the final model was derived and why this model was chosen. In addition, some type of analysis should be used to validate the robustness of this model and its solution, such as manipulating the input data or environment to see how the model’s solution is affected (this is called sensitivity analysis). Questions to ask yourself when writing this section:
+
 - _Is the final model reasonable and aligning with solution expectations? Are the final parameters of the model appropriate?_
+
 - _Has the final model been tested with various inputs to evaluate whether the model generalizes well to unseen data?_
+
 - _Is the model robust enough for the problem? Do small perturbations (changes) in training data or the input space greatly affect the results?_
+
 - _Can results found from the model be trusted?_
 
 ### Justification
@@ -144,34 +158,33 @@ _(approx. 1-2 pages)_
 
 ### Free-Form Visualization
 
-In this section, you will need to provide some form of visualization that emphasizes an important quality about the project. It is much more free-form, but should reasonably support a significant result or characteristic about the problem that you want to discuss. Questions to ask yourself when writing this section:
-- _Have you visualized a relevant or important quality about the problem, dataset, input data, or results?_
-- _Is the visualization thoroughly analyzed and discussed?_
-- _If a plot is provided, are the axes, title, and datum clearly defined?_
+The following picture shows how the agent sees the plane layout after 100 trails. From this visualization we could see dark blue parts are head and body squares, and lighter parts are less or non-related squares with the plane.
+
+**Sample 1:**
+
+A plane that South headed on location (7, 7):
+
+![viz1](viz1.png)
+
+**Sample 2:**
+
+A plane that East headed on location (8, 7):
+
+![viz2](viz2.png)
+
+
+
+TODO: Захын цэгүүдээр магадлал муутай, гол руугаа өндөр болж харагдах ёстой.
+Мөн аль нэг байрлал дээр шарх олсон бол өнгөний уусалтаар маш тодорхой харагдах ёстой.
+
 
 ### Reflection
 
-In this section, you will summarize the entire end-to-end problem solution and discuss one or two particular aspects of the project you found interesting or difficult. You are expected to reflect on the project as a whole to show that you have a firm understanding of the entire process employed in your work. Questions to ask yourself when writing this section:
-- _Have you thoroughly summarized the entire process you used for this project?_
-- _Were there any interesting aspects of the project?_
-- _Were there any difficult aspects of the project?_
-- _Does the final model and solution fit your expectations for the problem, and should it be used in a general setting to solve these types of problems?_
+This is a simple guessing game. But the most important question was could the agent learn well enough to compete against a experienced human player.
+
+RL шийдлээр шийдэхэд state болон action тоо маш их байсан учраас сургах хугацаа маш их шаардлагатай байсан нь гол асуудал байсан. Үүнийг шийдэх нэг хувилбар нь hint ашиглах юм. Эцсийн зорилго бол жинхэнэ хүн тоглогчтой өрсөлдөх хэмжээний agent бий болгох учраас hint ашиглах нь болохгүй зүйлгүй.
+
+Эцэст нь agent боломжийн хэмжээнд сурсан гэж үзэж байна. Дунджаар 8-12 буудалтаар онгоцны толгойн байрлалыг олж чадаж байгаа.
+
 
 ### Improvement
-
-In this section, you will need to provide discussion as to how one aspect of the implementation you designed could be improved. As an example, consider ways your implementation can be made more general, and what would need to be modified. You do not need to make this improvement, but the potential solutions resulting from these changes are considered and compared/contrasted to your current solution. Questions to ask yourself when writing this section:
-- _Are there further improvements that could be made on the algorithms or techniques you used in this project?_
-- _Were there algorithms or techniques you researched that you did not know how to implement, but would consider using if you knew how?_
-- _If you used your final solution as the new benchmark, do you think an even better solution exists?_
-
------------
-
-**Before submitting, ask yourself. . .**
-
-- Does the project report you’ve written follow a well-organized structure similar to that of the project template?
-- Is each section (particularly **Analysis** and **Methodology**) written in a clear, concise and specific fashion? Are there any ambiguous terms or phrases that need clarification?
-- Would the intended audience of your project be able to understand your analysis, methods, and results?
-- Have you properly proof-read your project report to assure there are minimal grammatical and spelling mistakes?
-- Are all the resources used for this project correctly cited and referenced?
-- Is the code that implements your solution easily readable and properly commented?
-- Does the code execute without error and produce results similar to those reported?

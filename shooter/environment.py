@@ -60,18 +60,17 @@ class Environment(object):
         # reward
         if shot_resp == 'H': # head shot
             reward = 100.0
-            self.board[shot[0]][shot[1]] = shot_resp
+            self.board[shot[1]][shot[0]] = shot_resp
         else:
             #  -10000.0 for repeated shot
-            # if self.board[shot[0]][shot[1]] != ' ':
-            #     reward = -10000.0
-            # else:
-
-            self._update_hints(shot, shot_resp)
-            reward = hint_old - len(self.hints)
+            if self.board[shot[1]][shot[0]] != ' ':
+                reward = -1000.0
+            else:
+                self._update_hints(shot, shot_resp)
+                reward = hint_old - len(self.hints)
 
             # update the board
-            self.board[shot[0]][shot[1]] = shot_resp
+            self.board[shot[1]][shot[0]] = shot_resp
 
         # debug
         # print shot, shot_resp, reward
@@ -158,21 +157,3 @@ class Environment(object):
             return 1 < y and y < 8 and x < 7
 
         return False
-
-
-
-if __name__ == '__main__':
-    p = Plane((2,1), 'N') # a plane secretly placed
-
-    # create environment
-    env = Environment()
-    env.new_game(p)
-    env.show()
-
-    for i in range(100):
-
-        s = random.choice(xrange(100))
-        x = s % 10
-        y = s / 10
-
-        resp, reward = env.shoot( (x, y) )

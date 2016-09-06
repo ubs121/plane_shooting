@@ -7,6 +7,7 @@ class LearningAgent():
     """An agent that learns to shoot"""
     alpha = 0.1
     gamma = 0.2
+    epsilon = 0.5
 
     def __init__(self, env):
         self.env = env
@@ -21,22 +22,32 @@ class LearningAgent():
         hints = self.env.get_hints() # head hints
         board = self.env.get_board() # board
 
-        # current board is the current state
-        s = ""
-        for i in range(self.env.size):
-            s += "".join(board[i])
+        # current board as state
+        s = []
+        for r in xrange(self.env.size):
+            s += board[r]
 
-        return s
+        # hints as state
+        # s = []
+        # for p in hints:
+        #     s.append(p.head[1]*10 + p.head[0])
+
+        return tuple(s)
 
     def next_shoot(self):
         self.state = self.build_state()
 
-        sa_Q_values = [self.q.get((self.state, a), 0.0) for a in self.actions]
-        sa_max = max(sa_Q_values)
+        shot = 0
 
-        sa_max_indexes = [i for i in range(len(self.actions)) if sa_Q_values[i] == sa_max]
-        i = random.choice(sa_max_indexes)
-        shot = self.actions[i]
+        if random.random() < self.epsilon:
+            shot = random.choice(self.actions)
+        else:
+            sa_Q_values = [self.q.get((self.state, a), 0.0) for a in self.actions]
+            sa_max = max(sa_Q_values)
+
+            sa_max_indexes = [i for i in range(len(self.actions)) if sa_Q_values[i] == sa_max]
+            i = random.choice(sa_max_indexes)
+            shot = self.actions[i]
 
         # (x, y) хэлбэрт оруулах
         y = shot / self.env.size
@@ -51,11 +62,11 @@ class LearningAgent():
         # Learn policy based on last state, action, reward
         self.learn(self.state, shot, reward, next_state)
 
-        # limit actions
+        # limit actions according to hint
         acts = []
         hints = self.env.get_hints()
         for h in hints:
-            acts.append(h.head[1]*10 + h.head[0])
+            acts.append(h.head[1]*self.env.size + h.head[0])
         self.actions = acts
 
 
