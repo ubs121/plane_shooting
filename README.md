@@ -95,7 +95,9 @@ Here is parameters for RL:
 
   For example, in case of the `Sample 1` of the section 'Data Exploration', by shooting at `(3,4)`, the agent will be rewarded by score 22, because before the shot a hint was 32, after the shot it become 10, so 32 - 10 = 22. So the shot was efficient that much in that particular state.
 
-#TODO: параметр тохируулгын тухай бичих
+TODO:
+
+параметр тохируулгын тухай бичих
 
 Alpha утгыг 1.0 сонгоно.
 
