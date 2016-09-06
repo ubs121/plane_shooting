@@ -16,10 +16,18 @@ class HumanSimulator(object):
         self.planes = self.env.all_planes()
 
     def run(self, agent):
-        # train for all variants
+        avg = 0.0
+        i = 0
+        # test for all variants
         for pl in self.planes:
-            # play 10 times
-            self.train(pl, agent, 100)
+            # play 100 times per one layout (training)
+            avg_shot = self.train(pl, agent, 100)
+
+            avg =  (avg_shot + i * avg) / (i + 1);
+            i += 1
+
+
+            print 'Total average', avg
 
     def train(self, pl, agent, n_trials=1):
         print "Plane {}".format(pl)  # [debug]
@@ -51,9 +59,11 @@ class HumanSimulator(object):
                 agent.response(shot, resp, reward)
 
         # print stats
-        print 'Average shot', shot_count / n_trials
+        avg_shot = shot_count / n_trials
+        print 'Average shot', avg_shot
         print 'Hit statistics:'
 
+        # a visualization using terminal colors
         for j in range(self.env.size):
             for  i in range(self.env.size):
                 pct = stats[j][i] / float(n_trials)
@@ -70,6 +80,8 @@ class HumanSimulator(object):
             sys.stdout.write('\n')
             sys.stdout.flush()
 
+        return avg_shot
+
     def play(self):
         pass
 
@@ -80,16 +92,16 @@ if __name__ == '__main__':
     agent = LearningAgent(env)
 
     player2 = HumanSimulator(env)
+
+    # test and train for all 168 layouts
     player2.run(agent)
 
-    # train
+    # train for one particular layout
     # p = Plane((7,1), 'N')
     # player2.train(p, agent, 100)
 
     print '*********************'
 
+    # Q values of learning
     # for s in sorted(agent.q):
     #      print s, agent.q[s]
-
-    # learning is done, now start playing ?
-    print 'Yo wanna play with me? So draw your plane...'

@@ -67,7 +67,13 @@ class Environment(object):
                 reward = -1000.0
             else:
                 self._update_hints(shot, shot_resp)
-                reward = hint_old - len(self.hints)
+                #reward = hint_old - len(self.hints)
+
+                # old reward policy
+                if shot_resp == 'B':
+                    reward = 10.0
+                elif shot_resp == 'M':
+                    reward = -1.0
 
             # update the board
             self.board[shot[1]][shot[0]] = shot_resp
