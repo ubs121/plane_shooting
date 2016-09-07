@@ -26,7 +26,7 @@ Human player secretly arranges a plane with the following figure on a grid with 
 
 The human player gives a feedback with letter `H` for head shot, `B` for body shot and `M` for miss (see the figure above).
 
-Using this feedback the agent have to find the head of the plane with minimum possible shots.
+Using this feedback the agent have to find the head of the plane with minimum possible shots. The agent must learn optimal technique, and be able to compete with a human player.
 
 ### Metrics
 
@@ -40,19 +40,21 @@ It's possible to find some part of the plane with 10 shots at maximum. Because t
 Once the agent hit on the body of the plane it should be easy to guess the head. Usually 2-4 shots needed to find the head after body shot. So in total, 14 shots should be enough to destroy any plane.
 
 
+Like the chess game, we could design a certain scenario and could test the agent for this scenario.
 
 
 ## II. Analysis
 
 ### Data Exploration
 
-There is no existing dataset for this problem. There is some input, a hint.
+There is no existing dataset for this problem. But there is some input, one is a hint.
 
 In order to minimize shots, a hint of next possible head locations is given to the agent. The agent must learn from this hint, and learn to select the best guess for head shot.
 
-The agent could use all random guess tactic. But it will not succeed, even it may be worse than the simple 100 shots.
 
-As I know, there are some well known tactics for the best guess. I didn't explore all best tactics, but here is shown two sample of them.
+
+As I know, there are some well known tactics for the best guess. I didn't explore all best tactics, the agent might found all best tactics. The below is shown two of them.
+
 
 ** Sample 1: A body shot **
 
@@ -74,20 +76,25 @@ Furthermore from this visualization of head distribution, we could see that inte
 
 ** Sample 2: A missed shot **
 
-If the agent missed at (2,2), then it still has to learn something from this shot, because this shot will reduce the next possible heads. In the below figure, white squares are non-head coordinates after this missed shot, so the agent will ignore this locations for the next shot.
+If the agent missed at (2,2), then it still has to learn something from this shot, because this shot will reduce the next possible heads. In the below figure, white squares are non-head coordinates after this missed shot, so the agent will skip these squares for the next shot.
 
 ![shot M](shot_M.png)
 
+Then agent have to choose the median points from the hint for the next shot, but the closest one from the last shot.
+
+![shot M_](shot_M_.png)
 
 ### Algorithms and Techniques
 
-This problem could be solved by using the Reinforcement Learning (RL) approach.
+This problem could be solved by using the Reinforcement Learning (RL) approach. The ultimate goal is to make an agent that able to play against real human.
 
-The idea is to reward every efficient shot of the agent. How efficient is measured by the reduction of possible head locations after every shot.
+The idea is to reward every efficient shot. How efficient is measured on every shot by the reduction of unknown area. A big reduction will be rewarded more, a little reduction will be rewarded less. So it will lead to the minimal shots and optimal tactics.
 
 Also could be some punishment, for example we could punish the agent if it shot at same location repeatedly.
 
-So the tactic is to explore the grid and shrink the unknown area as much as possible while seeking the plane head.
+The agent could use all random guess tactic. But it will not succeed, even it may be worse than the simple plain 100 shots. So the agent has to learn some best practices under some policy.
+
+So the best tactic is to explore the grid and shrink the blue area as much as possible while seeking the plane head.
 
 With this idea and enough number of training, I think the agent could 'learn' how to shoot efficiently.
 
@@ -95,11 +102,11 @@ With this idea and enough number of training, I think the agent could 'learn' ho
 
 Here is the main parameters for RL:
 
-* *States*: If we count every square of the grid, there are 3^100 states for this game. 3 is the number of shot marks, these are 'B', 'M' and empty square, 100 is the number of squares. This is a huge number and takes tremendous amount of time to train the agent. Anyway we will use the grid with the shot marks as a state, because it represents the current state the best.
+* *States*: If we count every square values on the grid, there could be 3^100 states for this game. 3 is the number of shot marks per square, these are 'B', 'M' and empty, 100 is the number of squares. This is a huge number and takes tremendous amount of time to train the agent. Anyway we will use a grid with the shot marks as a state, because it represents the current state the best.
 
-* *Actions*: There are 100 actions, each for every square coordinates. Luckily we will use hints to limit the number of actions. So it will be fewer and fewer 'state-action' combinations for each shot.
+* *Actions*: There are 100 actions, each action represents every square of the grid. Luckily we will use hints to limit the number of actions. So it will be fewer and fewer 'state-action' combinations after each shot.
 
-* *Reward*: If the agent hit the head of plane, then we will reward it by 100 points. In other cases, the reward will be the reduction size of possible head locations. It won't exceed than 100, that is why the maximum reward is 100.
+* *Reward*: Finding a optimal reward policy is the one important part of this solution. Reward policy which I found the most optimal is: If the agent hit the head of plane, then it will be rewarded by 100 points. In other cases, the reward will be equal to the reduction size of the blue area (head hints). It won't exceed than 100, that is why the maximum reward is 100.
 
  General reward formula is:
 
@@ -109,28 +116,28 @@ Here is the main parameters for RL:
 
   For example, in case of the `Sample 1` of the section 'Data Exploration', by shooting at `(3,4)`, the agent will be rewarded by score 22, because before the shot the length of hint was 32, after the shot it become 10, so 32 - 10 = 22. So the shot was efficient that much in that particular state.
 
-* *Punishment*: The agent should avoid repeated shots at same location. It's extremely useless and stupid action, so we could punish the agent by -1000 (almost never do it again). Also we could punish the agent if it shot at another location than suggested hint.
+* *Punishment*: The agent should avoid repeated shots at same location. It's extremely useless and stupid action, so we could punish the agent by -1000 (almost never do it again). Also we could punish the agent if it shot at different location than a suggested hint.
 
 * *Alpha*: alpha 0.1 is suggested value for a stochastic problem
 
-* *Gamma*: It could be 2.0. So the agent will focus on current rewards. I think current reward policy is efficient enough to guide the agent into correct choice.
+* *Gamma*: It could be 2.0. So the agent will focus on current rewards. I think a current reward policy is efficient enough to lead the agent into correct way.
 
-* *Epsilon*: Since this is a stochastic type of problem, I set the epsilon to 0.5. So the agent is allowed to make a random shot with 50% probability. In other 50% it will use it's past experience.
+* *Epsilon*: Since this is a stochastic type of problem, I set the epsilon to 0.5. So the agent is allowed to make random shots with 50% probability. In other 50%, it must use it's past experience.
 
 
 ### Benchmark
 
-Гүйцэтгэлийг хэмжихийн тулд дундаж буудсан тоо, буудалтын тархалтын статистик гэсэн үзүүлэлтүүдийг сонгож авсан.
+To measure the performance, I have chosen the average number of shots until head is found. This will be a main factor to indicate the performance.
 
-Дундаж буудалтыг нийт буудалтын тоог тоглолтын тоонд хувааж гаргасан. Тоглолт нь онгоцны тухайлсан нэг байрлал дээр яригдана.
+The average number of shots will be calculated as the following.
 
 ```
-  Average shot = totals shots / the number of play
+  Average shot per play = totals shots / the number of play
 ```
 
-From my experience, it is possible to find the head of plane with 6-10 shots at maximum. Энэ дундаж үзүүлэлтийг мөн баримжаа болгож үзэх хэрэгтэй. Ө.х `Average shot` нь ойролцоогоор 10 байхад хэвийн.
+From my experience, it is possible to find the head of plane with 9 shots on average. So this could be a guideline value for benchmark. Some lucky human players could find the head with 5-6 shots.
 
-
+There are 168 plane layouts in total. So we will benchmark the agent for all these possible layouts.
 
 
 ## III. Methodology
@@ -139,57 +146,144 @@ From my experience, it is possible to find the head of plane with 6-10 shots at 
 
 There is no data pre-processing is required for this problem.
 
-But after the problem is solved we could use the trained dataset for a real game (against real human). Also the agent could improve that learnt data over time.
+But after the problem is solved we could use the trained dataset for a real game (against real human).
 
 ### Implementation
 
-The solution code consists 3 sections of code: environment, agent and simulation.
+The implementation consists from 3 code sections: environment, agent and simulation modules.
 
 
-** The environment **
+** The environment module **
 
-Implementing the environment was the most important part of the problem. The environment contains a grid and plane.
+ The environment implementation was the most important part of the problem. It contains the grid and plane. This is also a controller module, that controls the game using the reward and punishment approach.
 
-new_game - нь тоглоомыг эхлүүлнэ. Үүнд grid-г цэвэрлэх, онгоцыг байршуулах г.м бэлтгэл кодууд багтана.
+ The most important methods are:
 
-shoot() - нь өгөгдсөн буудалтыг шалгаад тохирох шагналыг өгнө.
+* `new_game()` - it prepares for a new game, initialize the grid, cleans data, layout the plane  etc.
 
-get_hints() - нь буудалтын дараах  hint мэдээллийг өгнө.
+* `shoot()` - it applies a shot in the environment and calculates the reward for that shot. The following code section calculates the reward.
 
-Эдгээрээс гадна зарим туслах функцүүд бий.
+  ```python
+  hint_old = len(self.hints)
 
-random_plane() - нь санамсаргүй байрлалтай онгоц үүсгэнэ.
-valid() - нь өгөгдсөн байрлал зөв эсэхийг шалгана
-show() - нь орчныг дэлгэц дээр дүрсэлж харуулна
+  if shot_resp == 'H': # head shot
+      reward = 100.0
+      self.board[shot[1]][shot[0]] = shot_resp
+  else:
+      #  punish by -10000.0 for repeated shot
+      if self.board[shot[1]][shot[0]] != ' ':
+          reward = -1000.0
+      else:
+          self._update_hints(shot, shot_resp)
+          # reward amount
+          reward = hint_old - len(self.hints)
+
+  ```
+
+* get_hints() - gives a hint of possible head locations, hint will be updated after every shot
+
+There are other utility methods.
+
+* `random_plane()` - creates a random positioned plane.
+
+* `valid()` - checks if a given head and position is valid
+
+* `show()` - displays the environment on the screen
 
 
-** The agent **
+** The agent module **
 
-Энэ класс нь бидний гол суралцагч agent юм. RL аргачлалын дагуу state шинэчилэх, дараагийн action санал болгох, үр дүнгээсээ суралцах гэсэн үндсэн чадвартай байгаа.
+This is a student, our agent, that learns how to shoot. This agent is capable to shoot and can learn based on the feedback.
+
+* `next_shoot()` - gives a shot
+
+* `learn()` - learns from the feedback
+
+* `build_state()` - forms a current state
+
+The `next_shoot` method gives the next shot from the agent and it will be applied in the environment.
+
+```python
+    def next_shoot(self):
+      self.state = self.build_state()
+
+      shot = 0
+
+      # branch according to the exploration factor
+      if random.random() < self.epsilon:
+          shot = random.choice(self.actions)
+      else:
+          sa_Q_values = [self.q.get((self.state, a), 0.0) for a in self.actions]
+          sa_max = max(sa_Q_values)
+
+          # select an action with maximum Q value
+          sa_max_indexes = [i for i in range(len(self.actions))
+                if sa_Q_values[i] == sa_max]
+          i = random.choice(sa_max_indexes)
+          shot = self.actions[i]
+
+      # (x, y) хэлбэрт оруулах
+      y = shot / self.env.size
+      x = shot % self.env.size
+
+      return (x, y)
+```
+
+After every shot the agent learns using `learn()` method.
+
+```python
+  def learn(self, state1, action1, reward1, state2):
+      if state1 == None or len(self.actions) == 0:
+          # no previuos state
+          return
+
+      sa1 = self.q.get((state1, action1), 0.0)
+      sa2_maxQ = max([self.q.get((state2, a), 0.0) for a in self.actions])
+
+      # Q learning formula: Q(s,a) <- Q(s,a)+alpha[r+ gamma* max Q(s',a')-Q(s,a)]
+      self.q[(state1, action1)] = sa1 + self.alpha * (reward1 + self.gamma*sa2_maxQ - sa1)
+```
 
 ** The simulator **
 
-Орчин болон agent бэлэн болсон цагт бидэнд agent-г шалгах тоглогч хэрэгтэй. Бодит хүнтэй тоглож шалгаж болох боловч их цаг хугацаа орсон залхуутай ажил болно. Тийм учраас хүн тоглогчийг орлуулсан simulator хийсэн.
+This module simulates a human player and playes with the agent. It is designed to train the agent and check its performance according to the metrics.
 
-Энэ simulator нь онгоцны нийт 168 боломжит байрлал дээр agent-тай тоглолт хийнэ. Нэг байрлал дээр 100 удаа тоглолт хийж agent-г шалгана, бас давхар сургана. 168*100 удаа давтагдах учраас бага зэрэг удаан ажиллана.
-
+There are 168 variants of the plane. The simulator plays all these variants with the agent, and it does 200 trails for one layout. So it will be 168*200 trials in total.
 
 ### Refinement
 
-hint-н дагуу цэвэр санамсаргүй буудах аргаар явж болох байсан. Гэвч энэ нь тавьсан зорилгод ерөөсөө хүрэхгүй гэдэг нь нотлогдсон. Тиймээс agent суралцах хэрэгтэй байсан.
+I did several experiments on the parameters of Reinforcement Learning.  
 
-Сургахын тулд хамгийн гол хэсэг нь environment, тэр дотроо reward policy-г яаж тодорхойлох вэ гэдэг нь хамгийн чухал байлаа.
+I tried other reward policy for the agent. That policy was like: "100 points for head shot, 10 points for body shot, -1 points for missed shot". But this policy didn't perform well. Finally have chosen the policy mentioned in the section "Algorithms and Techniques".
 
-Agent-г гүйцэтгэлийг оновчлохын тулд RL параметрүүдийг янз бүрээр турших хэрэгтэй, мөн reward policy-г өөр хувилбараар турших хэрэгтэй.
+Gamma was set to 2.0. So the agent is more focused on current rewards.
 
-Эхлээд body шот хийсэн бол 10 оноо, miss болсон бол -1 оноо өгөх байдлаар reward policy-г тодорхойлж байсан юм. Гэвч энэ reward policy-р agent-н гүйцэтгэл олигтой сайн гарахгүй байсан.
-
-
-
-Some lucky human players could find the head with 5-6 shots. Anyway the agent must learn optimal technique, and be able to compete with a human player.
+Also I did some test on the epsilon parameter. The agent was performing poorly when epsilon is higher than 0.7, which means mostly random actions were chosen. 0.5 was the best optimal value for the epsilon parameter, also it's good for exploration.
 
 
-The following picture shows how the agent sees the plane layout after 100 trails. From this visualization we could see dark blue parts are head and body squares, and lighter parts are less or non-related squares with the plane.
+## IV. Results
+
+
+The agent is tested against 168*500 trails. The average shot until head is found was 8.9, this is acceptable result, I think.
+
+
+Here is the result:
+
+|epsilon|average shot|
+|-|-|
+|0.8|9.01|
+|0.5|8.89|
+
+
+
+
+## V. Conclusion
+
+### Free form visualization
+
+The shot distribution for particular layout was interesting. So I wanted to create some visualization using shot distribution after the simulation.
+
+The following picture shows how the agent sees the plane layout after 100 trails.
 
 **Sample 1:**
 
@@ -197,45 +291,38 @@ A plane that South headed at (7, 7):
 
 ![viz1](viz1.png)
 
+From this visualization we could see dark blue parts are head and body squares, and lighter area is less or non-related squares with the plane.
+
+It may be a blurred vision, but somehow it shows the agent's rough understanding about that particular layout.
+
 **Sample 2:**
 
 A plane that East headed at (8, 7):
 
 ![viz2](viz2.png)
 
+### Reflection
+
+This is a simple guessing game, but it has some degree of complexity similar to other board games like Chess and Go.
+
+I wanted to solve this problem using Machine Learning, because I had some thoughts: "could the agent find all best tactics ?", "could the agent play against an experienced human ?".
 
 
-simulator-с ажиглах ёстой гол зүйлс нь дундаж буудалтын тоо болон буудалтын статистик visualization байгаа. Энэ visualization нь тухайн layout-г agent баримжаагаар тодорхойлж чадсан эсэхийг харуулах зорилготой юм.
+The perfect agent is one who learnt all state-action combinations, which is 3^100 (approx. 5.1537752e+47) states and 100 actions. It's a huge value, 5.1537752e+49. To memorize this amount of state-actions I need a lot computing power.
 
-Захын цэгүүдээр тархалт муутай, гол руугаа өндөр болж харагдаж байгаа.
-Энэ нь өнгөний уусалтаар тодорхой харагдаж байна.
-
-## IV. Results
-
-
-Agent-г онгоцны нийт боломжит 168 байрлал дээр туршиж үзсэн. Дунджаар 8-11 буудалтын дараа онгоцны толгойг олж байсан.
-
-Дундаж буудалт нь 8.1 болсон.
-
-
-Хамгийн төгс agent бол бүх 3^100 state-с бүх 100 action-г хийж үзээд хамгийн оновчтойг нь сонгож сурсан байх хэрэгтэй болно. Үүнийг хийхэд их хэмжээний computing power шаардлагатай болох учраас одоогоор түр орхисон.
-
-
-## V. Conclusion
-
-This is a simple guessing game. But the most important question was could the agent learn well enough to compete against a experienced human player.
-
-I wanted to see if the agent could find the best tactics.
-
-The agent could learn and play like experienced human by 'practicing' every possible layouts of the plane.
-
-
-RL шийдлээр шийдэхэд state болон action тоо маш их байсан учраас сургахад  маш их хугацаа шаардлагатай сул талтай байсан. Үүнийг шийдэх нэг хувилбар нь hint ашиглах юм. Эцсийн зорилго бол жинхэнэ хүн тоглогчтой өрсөлдөх хэмжээний agent бий болгох учраас hint ашиглах нь болохгүй зүйлгүй.
-
-Эцэст нь agent боломжийн хэмжээнд сурсан гэж үзэж байна. Дунджаар 8-11 буудалтаар онгоцны толгойн байрлалыг олж чадаж байгаа.
-
+Instead I choose to use the hint approach. In addition to that, the agent must learn to select the best action within the hint. This was the most important point of the problem.
 
 
 ### Improvement
 
-Энэ шийдлийг цааш нь сайжруулах боломж бий.
+Still there is a room for improvement.
+
+One problem is it takes long time to learn all possible state-actions. It takes 20 minutes to train all layouts, in case of 500 trails per layout. It means we have to wait for 20 minutes if we want to check the agent on real game. Beside that it learns  only some part of all state-actions. I hope those are the most important combinations, but not sure. To check this we have to make test scenarios and check the agent for that scenario (like chess scenario).
+
+Anyway, we could reduce the training time. One idea is we could divide the game into two phases: one is before a body shot, another phase is after a body shot. The reason is to reduce the number of states. We will have fewer states instead of 3^100 states.
+
+And then, in the first phase, we may not use the Reinforcement Learning, instead we could use some statistics or classification algorithms from the Machine Learning. For the second phase we will use Reinforcement Learning as solved before.
+
+Also we could reduce possible actions, specially in the phase two.
+
+Another idea is we could use pre-learned dataset on every run. Then the agent will learn cumulatively.

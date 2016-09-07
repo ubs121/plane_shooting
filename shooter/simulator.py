@@ -20,14 +20,15 @@ class HumanSimulator(object):
         i = 0
         # test for all variants
         for pl in self.planes:
-            # play 100 times per one layout (training)
-            avg_shot = self.train(pl, agent, 100)
+            # play 500 times per one layout (training)
+            avg_shot = self.train(pl, agent, 500)
 
             avg =  (avg_shot + i * avg) / (i + 1);
             i += 1
 
 
-            print 'Total average', avg
+        print 'Total average', avg
+        print 'Size of state-action', len(agent.q)
 
     def train(self, pl, agent, n_trials=1):
         print "Plane {}".format(pl)  # [debug]
