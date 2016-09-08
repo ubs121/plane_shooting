@@ -22,26 +22,23 @@ One player tells the coordinates for shot, and the other give a feedback whether
 
 Human player secretly arranges a plane with the following figure on a grid with size of 10x10, let's say it an environment. You have to develop an agent that is capable to learn how to shoot the plane in this environment.
 
-![](plane1.png)
+![](plane1.png)  <img src="NEWS.png" style="height:5em"/>
 
 The human player gives a feedback with letter `H` for head shot, `B` for body shot and `M` for miss (see the figure above).
 
-Using this feedback the agent have to find the head of the plane with minimum possible shots. The agent must learn optimal technique, and be able to compete with a human player.
+Using this feedback the agent have to find the head of the plane with minimum possible shots. The agent must learn optimal technique using Machine Learning, and be able to compete with a human player. The Reinforcement Learning is recommended one, but any Machine Learning technique or combination of them are accepted.
 
 ### Metrics
 
 The agent's goal is to find the plane head with minimum possible shots.  So how many shots are required to destroy any plane? I couldn't tell exact number, but I have some reasonable metrics.
 
-In worst case the agent could find the head with 100 shots, which means it has to hit every square on the grid. But our agent has to be smarter than this.
+To measure the performance of the agent, I have chosen the average number of shots until the head is found. This will be a main factor to indicate the performance.
 
+The average number of shots will be calculated as the following.
 
-It's possible to find some part of the plane with 10 shots at maximum. Because the plane occupies 1/10 size of space on the board. Only thing is to keep correct amount of gap between shots to cover all area.
-
-Once the agent hit on the body of the plane it should be easy to guess the head. Usually 2-4 shots needed to find the head after body shot. So in total, 14 shots should be enough to destroy any plane.
-
-
-Like the chess game, we could design a certain scenario and could test the agent for this scenario.
-
+```
+  Average shot per play = totals shots / the number of play
+```
 
 ## II. Analysis
 
@@ -127,17 +124,17 @@ Here is the main parameters for RL:
 
 ### Benchmark
 
-To measure the performance, I have chosen the average number of shots until head is found. This will be a main factor to indicate the performance.
+In worst case the agent could find the head with 100 shots, which means it has to hit every square on the grid. But our agent has to be smarter than this.
 
-The average number of shots will be calculated as the following.
+It's possible to find some part of the plane with 10 shots at maximum. Because the plane occupies 1/10 size of space on the board. Only thing is to keep correct amount of gap between shots to cover all area.
 
-```
-  Average shot per play = totals shots / the number of play
-```
+Once the agent hit on the body of the plane it should be easy to guess the head. Usually 2-4 shots needed to find the head after body shot. So in total, 14 shots should be enough to destroy any plane.
 
 From my experience, it is possible to find the head of plane with 9 shots on average. So this could be a guideline value for benchmark. Some lucky human players could find the head with 5-6 shots.
 
 There are 168 plane layouts in total. So we will benchmark the agent for all these possible layouts.
+
+Also you could design a certain scenario like as the chess game and could check the actions of the agent in this scenario.
 
 
 ## III. Methodology
@@ -248,7 +245,7 @@ After every shot the agent learns using `learn()` method.
 
 This module simulates a human player and playes with the agent. It is designed to train the agent and check its performance according to the metrics.
 
-There are 168 variants of the plane. The simulator plays all these variants with the agent, and it does 200 trails for one layout. So it will be 168*200 trials in total.
+There are 168 variants of the plane. The simulator plays all these variants with the agent, and it does 500 trails for one layout. So it will be 168*500 trials in total.
 
 ### Refinement
 
@@ -260,6 +257,11 @@ Gamma was set to 2.0. So the agent is more focused on current rewards.
 
 Also I did some test on the epsilon parameter. The agent was performing poorly when epsilon is higher than 0.7, which means mostly random actions were chosen. 0.5 was the best optimal value for the epsilon parameter, also it's good for exploration.
 
+
+```
+TODO:
+Good work with the refinements, however, to meet specification in this section, a table with the results *before and after" the refinement is needed. If the results after your "refinements" are worse than the initial results, there is no problem with that, but an explanation is needed to analyze the result.
+```
 
 ## IV. Results
 
@@ -281,7 +283,7 @@ Here is the result:
 
 ### Free form visualization
 
-The shot distribution for particular layout was interesting. So I wanted to create some visualization using shot distribution after the simulation.
+The shot distribution for particular layout was interesting to me. So I wanted to create some visualization using shot distribution after every simulation.
 
 The following picture shows how the agent sees the plane layout after 100 trails.
 
@@ -291,15 +293,19 @@ A plane that South headed at (7, 7):
 
 ![viz1](viz1.png)
 
-From this visualization we could see dark blue parts are head and body squares, and lighter area is less or non-related squares with the plane.
+From this visualization we could see the colors, which represents a density of shots at that particular square. The dark blue parts are head and body squares, and lighter area is less or non-related squares to the plane.
 
-It may be a blurred vision, but somehow it shows the agent's rough understanding about that particular layout.
+It may be a blurred vision, but somehow it shows the agent's rough "understanding" about that particular layout.
+
+In the picture above you could see that the plane is headed to the South and located at square (7,7).
 
 **Sample 2:**
 
 A plane that East headed at (8, 7):
 
 ![viz2](viz2.png)
+
+ It's a plane with East head and located at square (8, 7).
 
 ### Reflection
 
