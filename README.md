@@ -20,9 +20,12 @@ One player tells the coordinates for shot, and the other give a feedback whether
 
 ### Problem Statement
 
-Human player secretly arranges a plane with the following figure on a grid with size of 10x10, let's say it an environment. You have to develop an agent that is capable to learn how to shoot the plane in this environment.
+Human player secretly arranges a plane with the following figure on a grid with size of 10x10, let's say it an environment. You have to develop an `agent` that is capable to learn how to shoot the plane in this environment.
+
+*Figure-1: The shape of plane, and the environment*
 
 ![](plane1.png)  <img src="NEWS.png" style="height:5em"/>
+
 
 The human player gives a feedback with letter `H` for head shot, `B` for body shot and `M` for miss (see the figure above).
 
@@ -32,12 +35,12 @@ Using this feedback the agent have to find the head of the plane with minimum po
 
 The agent's goal is to find the plane head with minimum possible shots.  So how many shots are required to destroy any plane? I couldn't tell exact number, but I have some reasonable metrics.
 
-To measure the performance of the agent, I have chosen the average number of shots until the head is found. This will be a main factor to indicate the performance.
+To measure the performance of the agent, I have chosen the average number of shots until the head is found. This will be a main factor to indicate the performance of the agent.
 
-The average number of shots will be calculated as the following.
+The average number of shots is calculated as the following.
 
 ```
-  Average shot per play = totals shots / the number of play
+  Average shot = totals shots / the number of play
 ```
 
 ## II. Analysis
@@ -46,54 +49,66 @@ The average number of shots will be calculated as the following.
 
 There is no existing dataset for this problem. But there is some input, one is a hint.
 
-In order to minimize shots, a hint of next possible head locations is given to the agent. The agent must learn from this hint, and learn to select the best guess for head shot.
+In order to minimize shots, a hint for next possible head locations is given to the agent. The agent must learn from this hint, and learn to select the best guess for head shot.
 
 
 
-As I know, there are some well known tactics for the best guess. I didn't explore all best tactics, the agent might found all best tactics. The below is shown two of them.
+As I know, there are some well known tactics for the best guess. I didn't explore all best tactics, the agent might found those best tactics during learning process.
+
+The below is shown two of them.
 
 
 ** Sample 1: A body shot **
 
-For example, if got a body shot ('B') on location (4,5), then after this shot the hint will look like the following. There are 32 possible head location after the body shot at (4,5).
+For example, if got a body shot 'B' on location (4,5), then after this shot the hint will look like the following. There are 32 possible head locations after the body shot at (4,5).
+
+  *Figure-2: A body shot and next possible head shots*
 
   ![shot B](shot_B.png)
 
-Furthermore from this visualization of head distribution, we could see that intersected squares (with tick borders) are the most efficient shots. Specially the square (3,4), (5,4), (3,6) and (5,6) are the most efficient locations to try. By shooting at these squares the agent will be rewarded anyway as one of the following:
+Furthermore from this visualization of head distribution, we could see that the intersected squares (with tick borders) are the most efficient shots. Specially the square `(3,4)`, `(5,4)`, `(3,6)` and `(5,6)` are the most efficient locations to try. By shooting at these squares the agent will be rewarded as one of the following:
 
 * Could win the game by just hitting a head, because these four locations are possible head locations.
 
-* Could be a body shot, for example at (3,4). If so the next possible head locations will be 3 times less at least.
+* Could be a body shot, for example at `(3,4)`. If so the next possible head locations will be 3 times less at least.
+
+  *Figure-3: Two body shots*
 
   ![shot BB](shot_BB.png)
 
-* Could be a miss. Even in this case the agent will get benefit, because the next possible head locations will be reduced by 6.
+* Could be a miss. Even in this case the agent will get a benefit, because the next possible head locations will be reduced by 6.
+
+  *Figure-4: A missed shot and after a body shot*
 
   ![shot BM](shot_BM.png)
 
 ** Sample 2: A missed shot **
 
-If the agent missed at (2,2), then it still has to learn something from this shot, because this shot will reduce the next possible heads. In the below figure, white squares are non-head coordinates after this missed shot, so the agent will skip these squares for the next shot.
+If the agent missed at `(2,2)`, then it still has to learn something from this shot, because this shot will reduce the next possible heads somehow. In the below figure, white squares are non-head coordinates after this missed shot, so the agent will skip these squares for the next shot.
+
+*Figure-5: A missed shot on the corner*
 
 ![shot M](shot_M.png)
 
-Then agent have to choose the median points from the hint for the next shot, but the closest one from the last shot.
+Then, the agent may choose the median points from the hint for the next shot, but the closest one from the last shot. These shots will open more "white" squares than others, so the agent will be rewarded more.
+
+*Figure-6: Effective shot points after a missed shot*
 
 ![shot M_](shot_M_.png)
 
 ### Algorithms and Techniques
 
-This problem could be solved by using the Reinforcement Learning (RL) approach. The ultimate goal is to make an agent that able to play against real human.
+This problem could be solved by using the Reinforcement Learning (RL) approach, more specifically using Q-Learning method. The ultimate goal is to make an agent able to play against real human and let it learn all best tactics. The Q-Learning has been proven that for any finite Markov decision process, so using this method the agent eventually find an optimal policy.
 
-The idea is to reward every efficient shot. How efficient is measured on every shot by the reduction of unknown area. A big reduction will be rewarded more, a little reduction will be rewarded less. So it will lead to the minimal shots and optimal tactics.
+The idea is to reward every efficient shot. How efficient is measured by the reduction of unknown area on every shot. A big reduction will be rewarded more, a little reduction will be rewarded less. So it will lead to the minimal shots and to the optimal tactics.
 
-Also could be some punishment, for example we could punish the agent if it shot at same location repeatedly.
+Also could be some punishment, for example we could punish the agent if it shoot at same point repeatedly.
 
-The agent could use all random guess tactic. But it will not succeed, even it may be worse than the simple plain 100 shots. So the agent has to learn some best practices under some policy.
+The agent could use "all random guess" tactic. But it will not succeed, even it may be worse than the simple plain 100 shots. So the agent has to learn some best practices under some policy.
 
-So the best tactic is to explore the grid and shrink the blue area as much as possible while seeking the plane head.
+The best tactic is to explore the grid and shrink the blue area as much as possible while seeking the plane head.
 
-With this idea and enough number of training, I think the agent could 'learn' how to shoot efficiently.
+With this idea and enough number of training, I think, the agent could 'learn' how to shoot efficiently.
 
 ** Parameters for RL **
 
@@ -249,7 +264,7 @@ There are 168 variants of the plane. The simulator plays all these variants with
 
 ### Refinement
 
-I did several experiments on the parameters of Reinforcement Learning.  
+I did several experiments on the parameters of Q-Learning.  
 
 I tried other reward policy for the agent. That policy was like: "100 points for head shot, 10 points for body shot, -1 points for missed shot". But this policy didn't perform well. Finally have chosen the policy mentioned in the section "Algorithms and Techniques".
 
@@ -257,24 +272,29 @@ Gamma was set to 2.0. So the agent is more focused on current rewards.
 
 Also I did some test on the epsilon parameter. The agent was performing poorly when epsilon is higher than 0.7, which means mostly random actions were chosen. 0.5 was the best optimal value for the epsilon parameter, also it's good for exploration.
 
+||Reward|Gamma|Epsilon | Result (Average shots)|
+|-|-|-|-|-|
+|The first version/policy|100 points for head shot, 10 points for body shot, -1 for missed shot|0.7 (long-term high reward)|0.8|`9.01`|
+|Second policy|Equal to the reduction of unknown area|0.2 (current reward)|0.5|`8.89`|
 
-```
-TODO:
-Good work with the refinements, however, to meet specification in this section, a table with the results *before and after" the refinement is needed. If the results after your "refinements" are worse than the initial results, there is no problem with that, but an explanation is needed to analyze the result.
-```
 
 ## IV. Results
 
 
-The agent is tested against 168*500 trails. The average shot until head is found was 8.9, this is acceptable result, I think.
+The final parameters of the agent.
 
-
-Here is the result:
-
-|epsilon|average shot|
+|Q-Learning parameter| Optimal value|
 |-|-|
-|0.8|9.01|
-|0.5|8.89|
+|Alpha|0.1|
+|Gamma|0.2|
+|Epsilon|0.5|
+|Reward policy|Equal to the reduction of unknown area|
+
+
+In this configuration, the agent is tested on 168*500 trials. The average shot until head is found was 8.9, this is acceptable result, I think.
+
+TODO: зарим статистик харуулах
+
 
 
 
@@ -291,6 +311,8 @@ The following picture shows how the agent sees the plane layout after 100 trails
 
 A plane that South headed at (7, 7):
 
+*Figure-6: Visualization of shot distribution after 100 trials*
+
 ![viz1](viz1.png)
 
 From this visualization we could see the colors, which represents a density of shots at that particular square. The dark blue parts are head and body squares, and lighter area is less or non-related squares to the plane.
@@ -302,6 +324,8 @@ In the picture above you could see that the plane is headed to the South and loc
 **Sample 2:**
 
 A plane that East headed at (8, 7):
+
+*Figure-7: Another visualization*
 
 ![viz2](viz2.png)
 
@@ -323,11 +347,11 @@ Instead I choose to use the hint approach. In addition to that, the agent must l
 
 Still there is a room for improvement.
 
-One problem is it takes long time to learn all possible state-actions. It takes 20 minutes to train all layouts, in case of 500 trails per layout. It means we have to wait for 20 minutes if we want to check the agent on real game. Beside that it learns  only some part of all state-actions. I hope those are the most important combinations, but not sure. To check this we have to make test scenarios and check the agent for that scenario (like chess scenario).
+One problem is it takes long time to learn all possible state-actions. It takes 20 minutes to train all layouts, in case of 500 trials per layout. It means we have to wait for 20 minutes if we want to play with the agent on real game. Besides, it learns  only some part of all state-actions. I hope those learnt with 500 trials are the most important combinations, but not sure. To check this we have to prepare some test scenarios like chess game and check the agent for that scenario.
 
 Anyway, we could reduce the training time. One idea is we could divide the game into two phases: one is before a body shot, another phase is after a body shot. The reason is to reduce the number of states. We will have fewer states instead of 3^100 states.
 
-And then, in the first phase, we may not use the Reinforcement Learning, instead we could use some statistics or classification algorithms from the Machine Learning. For the second phase we will use Reinforcement Learning as solved before.
+And then, in the first phase, we may not use the Reinforcement Learning, instead we could use some statistics or classification algorithms from the Machine Learning. For the second phase we could use Q Learning as solved before.
 
 Also we could reduce possible actions, specially in the phase two.
 
