@@ -333,47 +333,52 @@ pre.editor-colors .markdown .link .string,
 <p>Before play begins, each player secretly arranges their planes on their primary grid, usually 2-3 planes. Each plane occupies a number of consecutive squares on the grid, arranged either horizontally or vertically.</p>
 <p>One player tells the coordinates for shot, and the other give a feedback whether the player has hit or missed the plane. The best shooter who shot all planes of the opponent will win the game.</p>
 <h3 id="problem-statement">Problem Statement</h3>
-<p>Human player secretly arranges a plane with the following figure on a grid with size of 10x10, let&#39;s say it an environment. You have to develop an agent that is capable to learn how to shoot the plane in this environment.</p>
-<p><img src="/Users/ub/src/plane_shooting/plane1.png" alt=""></p>
+<p>Human player secretly arranges a plane with the following figure on a grid with size of 10x10, let&#39;s say it an environment. You have to develop an <code>agent</code> that is capable to learn how to shoot the plane in this environment.</p>
+<p><em>Figure-1: The shape of plane, and the environment</em></p>
+<p><img src="/Users/ub/src/plane_shooting/plane1.png" alt="">  <img src="/Users/ub/src/plane_shooting/NEWS.png" style="height:5em"></p>
 <p>The human player gives a feedback with letter <code>H</code> for head shot, <code>B</code> for body shot and <code>M</code> for miss (see the figure above).</p>
-<p>Using this feedback the agent have to find the head of the plane with minimum possible shots. The agent must learn optimal technique, and be able to compete with a human player.</p>
+<p>Using this feedback the agent have to find the head of the plane with minimum possible shots. The agent must learn optimal technique using Machine Learning, and be able to compete with a human player. The Reinforcement Learning is recommended one, but any Machine Learning technique or combination of them are accepted.</p>
 <h3 id="metrics">Metrics</h3>
 <p>The agent&#39;s goal is to find the plane head with minimum possible shots.  So how many shots are required to destroy any plane? I couldn&#39;t tell exact number, but I have some reasonable metrics.</p>
-<p>In worst case the agent could find the head with 100 shots, which means it has to hit every square on the grid. But our agent has to be smarter than this.</p>
-<p>It&#39;s possible to find some part of the plane with 10 shots at maximum. Because the plane occupies 1/10 size of space on the board. Only thing is to keep correct amount of gap between shots to cover all area.</p>
-<p>Once the agent hit on the body of the plane it should be easy to guess the head. Usually 2-4 shots needed to find the head after body shot. So in total, 14 shots should be enough to destroy any plane.</p>
-<p>Like the chess game, we could design a certain scenario and could test the agent for this scenario.</p>
-<h2 id="ii-analysis">II. Analysis</h2>
+<p>To measure the performance of the agent, I have chosen the average number of shots until the head is found. This will be a main factor to indicate the performance of the agent.</p>
+<p>The average number of shots is calculated as the following.</p>
+<pre class="editor-colors lang-text"><div class="line"><span class="text plain"><span>&nbsp;&nbsp;</span><span class="meta paragraph text"><span>Average&nbsp;shot&nbsp;=&nbsp;totals&nbsp;shots&nbsp;/&nbsp;the&nbsp;number&nbsp;of&nbsp;play</span></span></span></div></pre><h2 id="ii-analysis">II. Analysis</h2>
 <h3 id="data-exploration">Data Exploration</h3>
 <p>There is no existing dataset for this problem. But there is some input, one is a hint.</p>
-<p>In order to minimize shots, a hint of next possible head locations is given to the agent. The agent must learn from this hint, and learn to select the best guess for head shot.</p>
-<p>As I know, there are some well known tactics for the best guess. I didn&#39;t explore all best tactics, the agent might found all best tactics. The below is shown two of them.</p>
+<p>In order to minimize shots, a hint for next possible head locations is given to the agent. The agent must learn from this hint, and learn to select the best guess for head shot.</p>
+<p>As I know, there are some well known tactics for the best guess. I didn&#39;t explore all best tactics, the agent might found those best tactics during learning process.</p>
+<p>The below is shown two of them.</p>
 <p><strong> Sample 1: A body shot </strong></p>
-<p>For example, if got a body shot (&#39;B&#39;) on location (4,5), then after this shot the hint will look like the following. There are 32 possible head location after the body shot at (4,5).</p>
+<p>For example, if got a body shot &#39;B&#39; on location (4,5), then after this shot the hint will look like the following. There are 32 possible head locations after the body shot at (4,5).</p>
+<p>  <em>Figure-2: A body shot and next possible head shots</em></p>
 <p>  <img src="/Users/ub/src/plane_shooting/shot_B.png" alt="shot B"></p>
-<p>Furthermore from this visualization of head distribution, we could see that intersected squares (with tick borders) are the most efficient shots. Specially the square (3,4), (5,4), (3,6) and (5,6) are the most efficient locations to try. By shooting at these squares the agent will be rewarded anyway as one of the following:</p>
+<p>Furthermore from this visualization of head distribution, we could see that the intersected squares (with tick borders) are the most efficient shots. Specially the square <code>(3,4)</code>, <code>(5,4)</code>, <code>(3,6)</code> and <code>(5,6)</code> are the most efficient locations to try. By shooting at these squares the agent will be rewarded as one of the following:</p>
 <ul>
 <li><p>Could win the game by just hitting a head, because these four locations are possible head locations.</p>
 </li>
-<li><p>Could be a body shot, for example at (3,4). If so the next possible head locations will be 3 times less at least.</p>
+<li><p>Could be a body shot, for example at <code>(3,4)</code>. If so the next possible head locations will be 3 times less at least.</p>
+<p><em>Figure-3: Two body shots</em></p>
 <p><img src="/Users/ub/src/plane_shooting/shot_BB.png" alt="shot BB"></p>
 </li>
-<li><p>Could be a miss. Even in this case the agent will get benefit, because the next possible head locations will be reduced by 6.</p>
+<li><p>Could be a miss. Even in this case the agent will get a benefit, because the next possible head locations will be reduced by 6.</p>
+<p><em>Figure-4: A missed shot and after a body shot</em></p>
 <p><img src="/Users/ub/src/plane_shooting/shot_BM.png" alt="shot BM"></p>
 </li>
 </ul>
 <p><strong> Sample 2: A missed shot </strong></p>
-<p>If the agent missed at (2,2), then it still has to learn something from this shot, because this shot will reduce the next possible heads. In the below figure, white squares are non-head coordinates after this missed shot, so the agent will skip these squares for the next shot.</p>
+<p>If the agent missed at <code>(2,2)</code>, then it still has to learn something from this shot, because this shot will reduce the next possible heads somehow. In the below figure, white squares are non-head coordinates after this missed shot, so the agent will skip these squares for the next shot.</p>
+<p><em>Figure-5: A missed shot on the corner</em></p>
 <p><img src="/Users/ub/src/plane_shooting/shot_M.png" alt="shot M"></p>
-<p>Then agent have to choose the median points from the hint for the next shot, but the closest one from the last shot.</p>
+<p>Then, the agent may choose the median points from the hint for the next shot, but the closest one from the last shot. These shots will open more &quot;white&quot; squares than others, so the agent will be rewarded more.</p>
+<p><em>Figure-6: Effective shot points after a missed shot</em></p>
 <p><img src="/Users/ub/src/plane_shooting/shot_M_.png" alt="shot M_"></p>
 <h3 id="algorithms-and-techniques">Algorithms and Techniques</h3>
-<p>This problem could be solved by using the Reinforcement Learning (RL) approach. The ultimate goal is to make an agent that able to play against real human.</p>
-<p>The idea is to reward every efficient shot. How efficient is measured on every shot by the reduction of unknown area. A big reduction will be rewarded more, a little reduction will be rewarded less. So it will lead to the minimal shots and optimal tactics.</p>
-<p>Also could be some punishment, for example we could punish the agent if it shot at same location repeatedly.</p>
-<p>The agent could use all random guess tactic. But it will not succeed, even it may be worse than the simple plain 100 shots. So the agent has to learn some best practices under some policy.</p>
-<p>So the best tactic is to explore the grid and shrink the blue area as much as possible while seeking the plane head.</p>
-<p>With this idea and enough number of training, I think the agent could &#39;learn&#39; how to shoot efficiently.</p>
+<p>This problem could be solved by using the Reinforcement Learning (RL) approach, more specifically using Q-Learning method. The ultimate goal is to make an agent able to play against real human and let it learn all best tactics. The Q-Learning has been proven that for any finite Markov decision process, so using this method the agent eventually find an optimal policy.</p>
+<p>The idea is to reward every efficient shot. How efficient is measured by the reduction of unknown area on every shot. A big reduction will be rewarded more, a little reduction will be rewarded less. So it will lead to the minimal shots and to the optimal tactics.</p>
+<p>Also could be some punishment, for example we could punish the agent if it shoot at same point repeatedly.</p>
+<p>The agent could use &quot;all random guess&quot; tactic. But it will not succeed, even it may be worse than the simple plain 100 shots. So the agent has to learn some best practices under some policy.</p>
+<p>The best tactic is to explore the grid and shrink the blue area as much as possible while seeking the plane head.</p>
+<p>With this idea and enough number of training, I think, the agent could &#39;learn&#39; how to shoot efficiently.</p>
 <p><strong> Parameters for RL </strong></p>
 <p>Here is the main parameters for RL:</p>
 <ul>
@@ -395,10 +400,12 @@ pre.editor-colors .markdown .link .string,
 </li>
 </ul>
 <h3 id="benchmark">Benchmark</h3>
-<p>To measure the performance, I have chosen the average number of shots until head is found. This will be a main factor to indicate the performance.</p>
-<p>The average number of shots will be calculated as the following.</p>
-<pre class="editor-colors lang-text"><div class="line"><span class="text plain"><span>&nbsp;&nbsp;</span><span class="meta paragraph text"><span>Average&nbsp;shot&nbsp;per&nbsp;play&nbsp;=&nbsp;totals&nbsp;shots&nbsp;/&nbsp;the&nbsp;number&nbsp;of&nbsp;play</span></span></span></div></pre><p>From my experience, it is possible to find the head of plane with 9 shots on average. So this could be a guideline value for benchmark. Some lucky human players could find the head with 5-6 shots.</p>
+<p>In worst case the agent could find the head with 100 shots, which means it has to hit every square on the grid. But our agent has to be smarter than this.</p>
+<p>It&#39;s possible to find some part of the plane with 10 shots at maximum. Because the plane occupies 1/10 size of space on the board. Only thing is to keep correct amount of gap between shots to cover all area.</p>
+<p>Once the agent hit on the body of the plane it should be easy to guess the head. Usually 2-4 shots needed to find the head after body shot. So in total, 14 shots should be enough to destroy any plane.</p>
+<p>From my experience, it is possible to find the head of plane with 9 shots on average. So this could be a guideline value for benchmark. Some lucky human players could find the head with 5-6 shots.</p>
 <p>There are 168 plane layouts in total. So we will benchmark the agent for all these possible layouts.</p>
+<p>Also you could design a certain scenario like as the chess game and could check the actions of the agent in this scenario.</p>
 <h2 id="iii-methodology">III. Methodology</h2>
 <h3 id="data-preprocessing">Data Preprocessing</h3>
 <p>There is no data pre-processing is required for this problem.</p>
@@ -442,45 +449,84 @@ pre.editor-colors .markdown .link .string,
 <pre class="editor-colors lang-python"><div class="line"><span class="source python"><span class="meta function python"><span>&nbsp;&nbsp;</span><span class="storage type function python"><span>def</span></span><span>&nbsp;</span><span class="entity name function python"><span>learn</span></span><span class="punctuation definition parameters begin python"><span>(</span></span><span class="meta function parameters python"><span class="variable parameter function python"><span>self</span></span><span class="punctuation separator parameters python"><span>,</span></span><span>&nbsp;</span><span class="variable parameter function python"><span>state1</span></span><span class="punctuation separator parameters python"><span>,</span></span><span>&nbsp;</span><span class="variable parameter function python"><span>action1</span></span><span class="punctuation separator parameters python"><span>,</span></span><span>&nbsp;</span><span class="variable parameter function python"><span>reward1</span></span><span class="punctuation separator parameters python"><span>,</span></span><span>&nbsp;</span><span class="variable parameter function python"><span>state2</span></span></span><span class="punctuation definition parameters end python"><span>)</span></span><span class="punctuation section function begin python"><span>:</span></span></span></span></div><div class="line"><span class="source python"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword control conditional python"><span>if</span></span><span>&nbsp;</span><span>state1</span><span>&nbsp;</span><span class="keyword operator comparison python"><span>==</span></span><span>&nbsp;</span><span class="constant language python"><span>None</span></span><span>&nbsp;</span><span class="keyword operator logical python"><span>or</span></span><span>&nbsp;</span><span class="meta function-call python"><span class="support function builtin python"><span>len</span></span><span class="punctuation definition arguments begin python"><span>(</span></span><span class="meta function-call arguments python"><span class="variable language self python"><span>self</span></span><span>.</span><span>actions</span></span><span class="punctuation definition arguments end python"><span>)</span></span></span><span>&nbsp;</span><span class="keyword operator comparison python"><span>==</span></span><span>&nbsp;</span><span class="constant numeric integer decimal python"><span>0</span></span><span>:</span></span></div><div class="line"><span class="source python"><span class="punctuation whitespace comment leading python"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span><span class="comment line number-sign python"><span class="punctuation definition comment python"><span>#</span></span><span>&nbsp;no&nbsp;previuos&nbsp;state</span><span>&nbsp;</span></span></span></div><div class="line"><span class="source python"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword control statement python"><span>return</span></span></span></div><div class="line"><span class="source python"><span>&nbsp;</span></span></div><div class="line"><span class="source python"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span>sa1</span><span>&nbsp;</span><span class="keyword operator assignment python"><span>=</span></span><span>&nbsp;</span><span class="meta function-call python"><span class="variable language self python"><span>self</span></span><span>.</span><span>q</span><span>.</span><span>get</span><span class="punctuation definition arguments begin python"><span>(</span></span><span class="meta function-call arguments python"><span>(</span><span>state1</span><span>,&nbsp;</span><span>action1</span><span>)</span><span>,&nbsp;</span><span class="constant numeric float python"><span>0.0</span></span></span><span class="punctuation definition arguments end python"><span>)</span></span></span></span></div><div class="line"><span class="source python"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span>sa2_maxQ</span><span>&nbsp;</span><span class="keyword operator assignment python"><span>=</span></span><span>&nbsp;</span><span class="meta function-call python"><span class="support function builtin python"><span>max</span></span><span class="punctuation definition arguments begin python"><span>(</span></span><span class="meta function-call arguments python"><span class="meta structure list python"><span class="punctuation definition list begin python"><span>[</span></span><span class="meta structure list item python"><span class="meta function-call python"><span class="variable language self python"><span>self</span></span><span>.</span><span>q</span><span>.</span><span>get</span><span class="punctuation definition arguments begin python"><span>(</span></span><span class="meta function-call arguments python"><span>(</span><span>state2</span><span>,&nbsp;</span><span>a</span><span>)</span><span>,&nbsp;</span><span class="constant numeric float python"><span>0.0</span></span></span><span class="punctuation definition arguments end python"><span>)</span></span></span><span>&nbsp;</span><span class="keyword control repeat python"><span>for</span></span><span>&nbsp;</span><span>a</span><span>&nbsp;</span><span class="keyword operator logical python"><span>in</span></span><span>&nbsp;</span><span class="variable language self python"><span>self</span></span><span>.</span><span>actions</span></span><span class="punctuation definition list end python"><span>]</span></span></span></span><span class="punctuation definition arguments end python"><span>)</span></span></span></span></div><div class="line"><span class="source python"><span>&nbsp;</span></span></div><div class="line"><span class="source python"><span class="punctuation whitespace comment leading python"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span><span class="comment line number-sign python"><span class="punctuation definition comment python"><span>#</span></span><span>&nbsp;Q&nbsp;learning&nbsp;formula:&nbsp;Q(s,a)&nbsp;&lt;-&nbsp;Q(s,a)+alpha[r+&nbsp;gamma*&nbsp;max&nbsp;Q(s&#39;,a&#39;)-Q(s,a)]</span><span>&nbsp;</span></span></span></div><div class="line"><span class="source python"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="meta item-access python"><span class="variable language self python"><span>self</span></span><span>.</span><span>q</span><span class="punctuation definition arguments begin python"><span>[</span></span><span class="meta item-access arguments python"><span>(</span><span>state1</span><span>,&nbsp;</span><span>action1</span><span>)</span></span><span class="punctuation definition arguments end python"><span>]</span></span></span><span>&nbsp;</span><span class="keyword operator assignment python"><span>=</span></span><span>&nbsp;</span><span>sa1</span><span>&nbsp;</span><span class="keyword operator arithmetic python"><span>+</span></span><span>&nbsp;</span><span class="variable language self python"><span>self</span></span><span>.</span><span>alpha</span><span>&nbsp;</span><span class="keyword operator arithmetic python"><span>*</span></span><span>&nbsp;</span><span>(</span><span>reward1</span><span>&nbsp;</span><span class="keyword operator arithmetic python"><span>+</span></span><span>&nbsp;</span><span class="variable language self python"><span>self</span></span><span>.</span><span>gamma</span><span class="keyword operator arithmetic python"><span>*</span></span><span>sa2_maxQ</span><span>&nbsp;</span><span class="keyword operator arithmetic python"><span>-</span></span><span>&nbsp;</span><span>sa1</span><span>)</span></span></div></pre>
 <p><strong> The simulator </strong></p>
 <p>This module simulates a human player and playes with the agent. It is designed to train the agent and check its performance according to the metrics.</p>
-<p>There are 168 variants of the plane. The simulator plays all these variants with the agent, and it does 200 trails for one layout. So it will be 168*200 trials in total.</p>
+<p>There are 168 variants of the plane. The simulator plays all these variants with the agent, and it does 500 trials for one layout. So it will be 168*500 trials in total.</p>
 <h3 id="refinement">Refinement</h3>
-<p>I did several experiments on the parameters of Reinforcement Learning.  </p>
+<p>I did several experiments on the parameters of Q-Learning.  </p>
 <p>I tried other reward policy for the agent. That policy was like: &quot;100 points for head shot, 10 points for body shot, -1 points for missed shot&quot;. But this policy didn&#39;t perform well. Finally have chosen the policy mentioned in the section &quot;Algorithms and Techniques&quot;.</p>
 <p>Gamma was set to 2.0. So the agent is more focused on current rewards.</p>
 <p>Also I did some test on the epsilon parameter. The agent was performing poorly when epsilon is higher than 0.7, which means mostly random actions were chosen. 0.5 was the best optimal value for the epsilon parameter, also it&#39;s good for exploration.</p>
-<h2 id="iv-results">IV. Results</h2>
-<p>The agent is tested against 168*500 trails. The average shot until head is found was 8.9, this is acceptable result, I think.</p>
-<p>Here is the result:</p>
 <table>
 <thead>
 <tr>
-<th>epsilon</th>
-<th>average shot</th>
+<th></th>
+<th>Reward</th>
+<th>Gamma</th>
+<th>Epsilon</th>
+<th>Result (Average shots)</th>
 </tr>
 </thead>
 <tbody>
 <tr>
+<td>The first version/policy</td>
+<td>100 points for head shot, 10 points for body shot, -1 for missed shot</td>
+<td>0.7 (long-term high reward)</td>
 <td>0.8</td>
-<td>9.01</td>
+<td><code>9.01</code></td>
 </tr>
 <tr>
+<td>Second policy</td>
+<td>Equal to the reduction of unknown area</td>
+<td>0.2 (current reward)</td>
 <td>0.5</td>
-<td>8.89</td>
+<td><code>8.89</code></td>
 </tr>
 </tbody>
 </table>
+<h2 id="iv-results">IV. Results</h2>
+<p>The final parameters of the agent.</p>
+<table>
+<thead>
+<tr>
+<th>Q-Learning parameter</th>
+<th>Optimal value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Alpha</td>
+<td>0.1</td>
+</tr>
+<tr>
+<td>Gamma</td>
+<td>0.2</td>
+</tr>
+<tr>
+<td>Epsilon</td>
+<td>0.5</td>
+</tr>
+<tr>
+<td>Reward policy</td>
+<td>Equal to the reduction of unknown area</td>
+</tr>
+</tbody>
+</table>
+<p>In this configuration, the agent is tested on 168*500 trials. The average shot until head is found was 8.9, this is acceptable result, I think.</p>
 <h2 id="v-conclusion">V. Conclusion</h2>
 <h3 id="free-form-visualization">Free form visualization</h3>
-<p>The shot distribution for particular layout was interesting. So I wanted to create some visualization using shot distribution after the simulation.</p>
-<p>The following picture shows how the agent sees the plane layout after 100 trails.</p>
+<p>The shot distribution for particular layout was interesting to me. So I wanted to create some visualization using shot distribution after every simulation.</p>
+<p>The following picture shows how the agent sees the plane layout after 100 trials.</p>
 <p><strong>Sample 1:</strong></p>
 <p>A plane that South headed at (7, 7):</p>
+<p><em>Figure-6: Visualization of shot distribution after 100 trials</em></p>
 <p><img src="/Users/ub/src/plane_shooting/viz1.png" alt="viz1"></p>
-<p>From this visualization we could see dark blue parts are head and body squares, and lighter area is less or non-related squares with the plane.</p>
-<p>It may be a blurred vision, but somehow it shows the agent&#39;s rough understanding about that particular layout.</p>
+<p>From this visualization we could see the colors, which represents a density of shots at that particular square. The dark blue parts are head and body squares, and lighter area is less or non-related squares to the plane.</p>
+<p>It may be a blurred vision, but somehow it shows the agent&#39;s rough &quot;understanding&quot; about that particular layout.</p>
+<p>In the picture above you could see that the plane is headed to the South and located at square (7,7).</p>
 <p><strong>Sample 2:</strong></p>
 <p>A plane that East headed at (8, 7):</p>
+<p><em>Figure-7: Another visualization</em></p>
 <p><img src="/Users/ub/src/plane_shooting/viz2.png" alt="viz2"></p>
+<p> It&#39;s a plane with East head and located at square (8, 7).</p>
 <h3 id="reflection">Reflection</h3>
 <p>This is a simple guessing game, but it has some degree of complexity similar to other board games like Chess and Go.</p>
 <p>I wanted to solve this problem using Machine Learning, because I had some thoughts: &quot;could the agent find all best tactics ?&quot;, &quot;could the agent play against an experienced human ?&quot;.</p>
@@ -488,9 +534,9 @@ pre.editor-colors .markdown .link .string,
 <p>Instead I choose to use the hint approach. In addition to that, the agent must learn to select the best action within the hint. This was the most important point of the problem.</p>
 <h3 id="improvement">Improvement</h3>
 <p>Still there is a room for improvement.</p>
-<p>One problem is it takes long time to learn all possible state-actions. It takes 20 minutes to train all layouts, in case of 500 trails per layout. It means we have to wait for 20 minutes if we want to check the agent on real game. Beside that it learns  only some part of all state-actions. I hope those are the most important combinations, but not sure. To check this we have to make test scenarios and check the agent for that scenario (like chess scenario).</p>
+<p>One problem is it takes long time to learn all possible state-actions. It takes 20 minutes to train all layouts, in case of 500 trials per layout. It means we have to wait for 20 minutes if we want to play with the agent on real game. Besides, it learns  only some part of all state-actions. I hope those learnt with 500 trials are the most important combinations, but not sure. To check this we have to prepare some test scenarios like chess game and check the agent for that scenario.</p>
 <p>Anyway, we could reduce the training time. One idea is we could divide the game into two phases: one is before a body shot, another phase is after a body shot. The reason is to reduce the number of states. We will have fewer states instead of 3^100 states.</p>
-<p>And then, in the first phase, we may not use the Reinforcement Learning, instead we could use some statistics or classification algorithms from the Machine Learning. For the second phase we will use Reinforcement Learning as solved before.</p>
+<p>And then, in the first phase, we may not use the Reinforcement Learning, instead we could use some statistics or classification algorithms from the Machine Learning. For the second phase we could use Q Learning as solved before.</p>
 <p>Also we could reduce possible actions, specially in the phase two.</p>
 <p>Another idea is we could use pre-learned dataset on every run. Then the agent will learn cumulatively.</p></body>
 </html>
