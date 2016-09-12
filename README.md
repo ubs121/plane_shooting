@@ -260,7 +260,7 @@ After every shot the agent learns using `learn()` method.
 
 This module simulates a human player and playes with the agent. It is designed to train the agent and check its performance according to the metrics.
 
-There are 168 variants of the plane. The simulator plays all these variants with the agent, and it does 500 trails for one layout. So it will be 168*500 trials in total.
+There are 168 variants of the plane. The simulator plays all these variants with the agent, and it does 500 trials for one layout. So it will be 168*500 trials in total.
 
 ### Refinement
 
@@ -293,8 +293,6 @@ The final parameters of the agent.
 
 In this configuration, the agent is tested on 168*500 trials. The average shot until head is found was 8.9, this is acceptable result, I think.
 
-TODO: зарим статистик харуулах
-
 
 
 
@@ -305,7 +303,7 @@ TODO: зарим статистик харуулах
 
 The shot distribution for particular layout was interesting to me. So I wanted to create some visualization using shot distribution after every simulation.
 
-The following picture shows how the agent sees the plane layout after 100 trails.
+The following picture shows how the agent sees the plane layout after 100 trials.
 
 **Sample 1:**
 
