@@ -373,7 +373,8 @@ pre.editor-colors .markdown .link .string,
 <p><em>Figure-6: Effective shot points after a missed shot</em></p>
 <p><img src="/Users/ub/src/plane_shooting/shot_M_.png" alt="shot M_"></p>
 <h3 id="algorithms-and-techniques">Algorithms and Techniques</h3>
-<p>This problem could be solved by using the Reinforcement Learning (RL) approach, more specifically using Q-Learning method. The ultimate goal is to make an agent able to play against real human and let it learn all best tactics. The Q-Learning has been proven that for any finite Markov decision process, so using this method the agent eventually find an optimal policy.</p>
+<p>This is a simple guessing game, but it has some degree of complexity similar to other board games like Chess and Go.</p>
+<p>The problem could be solved by using the Reinforcement Learning (RL) approach, more specifically using Q-Learning method. The ultimate goal is to make an agent able to play against real human and let it learn all best tactics. The Q-Learning has been proven that for any finite Markov decision process, so using this method the agent eventually find an optimal policy.</p>
 <p>The idea is to reward every efficient shot. How efficient is measured by the reduction of unknown area on every shot. A big reduction will be rewarded more, a little reduction will be rewarded less. So it will lead to the minimal shots and to the optimal tactics.</p>
 <p>Also could be some punishment, for example we could punish the agent if it shoot at same point repeatedly.</p>
 <p>The agent could use &quot;all random guess&quot; tactic. But it will not succeed, even it may be worse than the simple plain 100 shots. So the agent has to learn some best practices under some policy.</p>
@@ -528,10 +529,28 @@ pre.editor-colors .markdown .link .string,
 <p><img src="/Users/ub/src/plane_shooting/viz2.png" alt="viz2"></p>
 <p> It&#39;s a plane with East head and located at square (8, 7).</p>
 <h3 id="reflection">Reflection</h3>
-<p>This is a simple guessing game, but it has some degree of complexity similar to other board games like Chess and Go.</p>
-<p>I wanted to solve this problem using Machine Learning, because I had some thoughts: &quot;could the agent find all best tactics ?&quot;, &quot;could the agent play against an experienced human ?&quot;.</p>
-<p>The perfect agent is one who learnt all state-action combinations, which is 3^100 (approx. 5.1537752e+47) states and 100 actions. It&#39;s a huge value, 5.1537752e+49. To memorize this amount of state-actions I need a lot computing power.</p>
-<p>Instead I choose to use the hint approach. In addition to that, the agent must learn to select the best action within the hint. This was the most important point of the problem.</p>
+<p>I wanted to solve this problem using Q-Learning algorithm from the beginning, because I had some thoughts:</p>
+<ul>
+<li>&quot;Could the agent find all best shooting tactics ? Q-Learning might be a perfect answer to find this&quot;</li>
+<li>&quot;Could the agent play against an experienced human player ?&quot;</li>
+</ul>
+<p>I played with my wife, and tried to remember the game tactics and rules. We used to play this game during school days, usually during recess time. Another goal was to discuss and identify key points of the game, according to the Q-Learning approach.</p>
+<p>I decided to simplify the game, and changed few things:</p>
+<ul>
+<li>Use one plane only. Usually we play with 3 planes for real game.</li>
+<li>Design an agent that capable to play with human, but in one direction only. At the beginning, I was thinking about an interactive game, bi-directional. Then decided to focus on the core logic of the game, more than a &quot;real playable game&quot;.</li>
+</ul>
+<p>This is a board game with size 10x10, so it was obvious there will be huge number of state-actions in Q-Learning. The perfect agent must learn all those state-action combinations, which is 3^100 (approx. 5.1537752e+47) states and 100 actions. It&#39;s a huge value, 5.1537752e+49. To memorize this amount of state-actions I might need a lot computing power. So decided to use a hint approach. And the agent must learn to select a best action within the hint. This was the most important and interesting point of the problem.</p>
+<p>Finding a good rewarding mechanism was also really challenging. There are 2 requirements on the rewarding policy:</p>
+<ul>
+<li>it must guide the agent in a correct way, lead to choose the best action</li>
+<li>it must lead to the minimal shots</li>
+</ul>
+<p>I changed the rewarding policy twice, and selected better one.</p>
+<p>After key decisions are made, I started writing the environment code (Environment class). This code was the key part of the solution. I did some unit tests on the Plane and Environment classes during the implementation.</p>
+<p>After the environment code, I wrote an agent code. The agent implementation was very simple and straightforward, because I re-used some source codes from the former project.</p>
+<p>This simulator code was also simple and straightforward. It just loops over all possible variants of the plane, and initiates a play with the agent.
+Later, I decided to add some measurement and visualization into the simulator.</p>
 <h3 id="improvement">Improvement</h3>
 <p>Still there is a room for improvement.</p>
 <p>One problem is it takes long time to learn all possible state-actions. It takes 20 minutes to train all layouts, in case of 500 trials per layout. It means we have to wait for 20 minutes if we want to play with the agent on real game. Besides, it learns  only some part of all state-actions. I hope those learnt with 500 trials are the most important combinations, but not sure. To check this we have to prepare some test scenarios like chess game and check the agent for that scenario.</p>
