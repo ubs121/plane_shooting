@@ -98,7 +98,9 @@ Then, the agent may choose the median points from the hint for the next shot, bu
 
 ### Algorithms and Techniques
 
-This problem could be solved by using the Reinforcement Learning (RL) approach, more specifically using Q-Learning method. The ultimate goal is to make an agent able to play against real human and let it learn all best tactics. The Q-Learning has been proven that for any finite Markov decision process, so using this method the agent eventually find an optimal policy.
+This is a simple guessing game, but it has some degree of complexity similar to other board games like Chess and Go.
+
+The problem could be solved by using the Reinforcement Learning (RL) approach, more specifically using Q-Learning method. The ultimate goal is to make an agent able to play against real human and let it learn all best tactics. The Q-Learning has been proven that for any finite Markov decision process, so using this method the agent eventually find an optimal policy.
 
 The idea is to reward every efficient shot. How efficient is measured by the reduction of unknown area on every shot. A big reduction will be rewarded more, a little reduction will be rewarded less. So it will lead to the minimal shots and to the optimal tactics.
 
@@ -331,14 +333,37 @@ A plane that East headed at (8, 7):
 
 ### Reflection
 
-This is a simple guessing game, but it has some degree of complexity similar to other board games like Chess and Go.
 
-I wanted to solve this problem using Machine Learning, because I had some thoughts: "could the agent find all best tactics ?", "could the agent play against an experienced human ?".
+I wanted to solve this problem using Q-Learning algorithm from the beginning, because I had some thoughts:
+
+* "Could the agent find all best shooting tactics ? Q-Learning might be a perfect answer to find this"
+* "Could the agent play against an experienced human player ?"
+
+I played with my wife, and tried to remember the game tactics and rules. We used to play this game during school days, usually during recess time. Another goal was to discuss and identify key points of the game, according to the Q-Learning approach.
+
+I decided to simplify the game, and changed few things:
+
+* Use one plane only. Usually we play with 3 planes for real game.
+* Design an agent that capable to play with human, but in one direction only. At the beginning, I was thinking about an interactive game, bi-directional. Then decided to focus on the core logic of the game, more than a "real playable game".
 
 
-The perfect agent is one who learnt all state-action combinations, which is 3^100 (approx. 5.1537752e+47) states and 100 actions. It's a huge value, 5.1537752e+49. To memorize this amount of state-actions I need a lot computing power.
+This is a board game with size 10x10, so it was obvious there will be huge number of state-actions in Q-Learning. The perfect agent must learn all those state-action combinations, which is 3^100 (approx. 5.1537752e+47) states and 100 actions. It's a huge value, 5.1537752e+49. To memorize this amount of state-actions I might need a lot computing power. So decided to use a hint approach. And the agent must learn to select a best action within the hint. This was the most important and interesting point of the problem.
 
-Instead I choose to use the hint approach. In addition to that, the agent must learn to select the best action within the hint. This was the most important point of the problem.
+
+Finding a good rewarding mechanism was also really challenging. There are 2 requirements on the rewarding policy:
+
+* it must guide the agent in a correct way, lead to choose the best action
+* it must lead to the minimal shots
+
+I changed the rewarding policy twice, and selected better one.
+
+After key decisions are made, I started writing the environment code (Environment class). This code was the key part of the solution. I did some unit tests on the Plane and Environment classes during the implementation.
+
+After the environment code, I wrote an agent code. The agent implementation was very simple and straightforward, because I re-used some source codes from the former project.
+
+This simulator code was also simple and straightforward. It just loops over all possible variants of the plane, and initiates a play with the agent.
+Later, I decided to add some measurement and visualization into the simulator.
+
 
 
 ### Improvement
